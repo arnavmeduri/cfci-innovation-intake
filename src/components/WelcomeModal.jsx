@@ -17,15 +17,16 @@ const WelcomeModal = ({ isOpen, onClose }) => {
         </p>
         <p className="modal-link-text">
           Before submitting, be sure to read our{' '}
-          <a href="https://drive.google.com/file/d/1ER7oPqx6F8OlBkUtvYbKXjcyGvtRrNTg/view" target="_blank" rel="noopener noreferrer" className="modal-link">Product Lab Sponsorship one-pager!</a>
+          <a href="https://drive.google.com/file/d/1ER7oPqx6F8OlBkUtvYbKXjcyGvtRrNTg/view" target="_blank" rel="noopener noreferrer" className="modal-link">Product Lab Sponsorship one-pager</a>!
         </p>
-        <button className="modal-button" onClick={onClose}>
-          Continue
-        </button>
+        <div className="modal-button-container">
+          <button className="modal-button" onClick={onClose}>
+            Continue
+          </button>
+        </div>
       </div>
     </div>
   );
 };
 
 export default WelcomeModal;
-
