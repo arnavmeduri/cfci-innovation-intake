@@ -24,22 +24,25 @@ An AI-powered chatbot interface for the Christensen Family Center for Innovation
 
 ```
 cfci-innovation-intake/
-├── src/                    # Frontend React application
-│   ├── components/         # React components
-│   ├── contexts/           # React context (Auth)
-│   ├── services/           # API service layer
-│   └── main.jsx            # Entry point
-├── server/                 # Backend FastAPI application
+├── public/                     # Static assets (images, icons)
+├── src/                        # Frontend React application
+│   ├── components/             # React components + CSS
+│   ├── contexts/               # React context (Auth)
+│   ├── services/               # API service layer
+│   └── main.jsx                # Entry point
+├── server/                     # Backend FastAPI application
 │   └── app/
-│       ├── api/            # API endpoints (auth, chat)
-│       ├── core/           # Config, security, JWT
-│       ├── db/             # Database models
-│       ├── prompts/        # LLM prompt templates
-│       ├── schemas/        # Pydantic schemas
-│       ├── services/       # OpenAI service
-│       └── main.py         # FastAPI entry point
-├── public/                 # Static assets
-└── package.json
+│       ├── api/                # API endpoints (auth, chat)
+│       ├── core/               # Config, security, JWT
+│       ├── db/                 # Database models
+│       ├── prompts/            # LLM prompt templates
+│       ├── schemas/            # Pydantic schemas
+│       ├── services/           # OpenAI service
+│       └── main.py             # FastAPI entry point
+├── index.html                  # HTML entry point
+├── package.json                # Frontend dependencies
+├── vite.config.js              # Vite configuration
+└── README.md
 ```
 
 ## Prerequisites
@@ -166,4 +169,3 @@ uvicorn app.main:app --reload --port 8000
 ## License
 
 This project is part of Duke University's Christensen Family Center for Innovation.
-
