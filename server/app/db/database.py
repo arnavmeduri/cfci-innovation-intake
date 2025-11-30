@@ -35,5 +35,7 @@ def get_db():
 
 def create_tables():
     """Create all database tables"""
+    # Import all models to register them with Base
+    from app.db.models import User, Conversation, Message, Form, FormTemplate, FieldTemplate, FieldSubmission
     Base.metadata.create_all(bind=engine)
 

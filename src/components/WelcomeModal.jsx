@@ -11,7 +11,7 @@ const WelcomeModal = ({ isOpen, onClose }) => {
         <div className="modal-header">
           <img src={cfciLogo} alt="CFCI Logo" className="modal-logo" />
         </div>
-        <h1 className="modal-title">Welcome to CFCI's Product Lab Assistant!</h1>
+        <h1 className="modal-title">Welcome to CFCI's Project Intake Chatbot!</h1>
         <p className="modal-description">
           This interactive tool will help you create a polished Product Brief for submission to CFCI for project matching. To get started, type a description of your startup or the idea you'd like CFCI's Product Lab to support. Our assistant will collaborate with you to build out the rest.
         </p>

@@ -65,6 +65,37 @@ export const chatAPI = {
       }),
     });
   },
+
+  /**
+   * Initiate a new conversation for authenticated users
+   * Returns conversation_id and initial message
+   */
+  initiate: async (token) => {
+    return fetchAPI('/api/chat/initiate', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+  },
+
+  /**
+   * Advance an existing conversation for authenticated users
+   * Sends message and gets AI response
+   */
+  advance: async (token, conversationId, message, messageStepNum) => {
+    return fetchAPI('/api/chat/advance', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        conversation_id: conversationId,
+        user_message: message,
+        message_step_num: messageStepNum,
+      }),
+    });
+  },
 };
 
 /**

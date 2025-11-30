@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { AuthProvider } from './contexts/AuthContext';
 import WelcomeModal from './components/WelcomeModal';
 import LandingPage from './components/LandingPage';
+import LoginPage from './components/LoginPage';
+import RegisterPage from './components/RegisterPage';
 
 function App() {
   const [showWelcomeModal, setShowWelcomeModal] = useState(true);
@@ -23,12 +27,26 @@ function App() {
   };
 
   return (
-    <div className="app">
-      <LandingPage onOpenWelcome={handleOpenWelcome} />
-      <WelcomeModal isOpen={showWelcomeModal} onClose={handleCloseWelcome} />
-    </div>
+    <AuthProvider>
+      <Router>
+        <div className="app">
+          <Routes>
+            <Route 
+              path="/" 
+              element={
+                <>
+                  <LandingPage onOpenWelcome={handleOpenWelcome} />
+                  <WelcomeModal isOpen={showWelcomeModal} onClose={handleCloseWelcome} />
+                </>
+              } 
+            />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/register" element={<RegisterPage />} />
+          </Routes>
+        </div>
+      </Router>
+    </AuthProvider>
   );
 }
 
 export default App;
-

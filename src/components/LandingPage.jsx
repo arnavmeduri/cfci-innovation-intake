@@ -1,6 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import './LandingPage.css';
 import { chatAPI } from '../services/api';
+import { useAuth } from '../contexts/AuthContext';
+import LogoutModal from './LogoutModal';
 
 const cfciLogo = '/cfci-logo.jpg';
 const cfciIcon = '/cfci-icon.png';
@@ -11,12 +14,29 @@ const LandingPage = ({ onOpenWelcome }) => {
   const [attachedFiles, setAttachedFiles] = useState([]);
   const [messages, setMessages] = useState([]);
   const [conversationId, setConversationId] = useState(null);
+  const [messageStepNum, setMessageStepNum] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   
   const fileInputRef = useRef(null);
   const pdfInputRef = useRef(null);
   const textareaRef = useRef(null);
   const messagesEndRef = useRef(null);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
+  
+  const { isAuthenticated, user, token, logout } = useAuth();
+
+  const handleLogoutClick = () => {
+    setShowLogoutModal(true);
+  };
+
+  const handleLogoutConfirm = () => {
+    setShowLogoutModal(false);
+    logout();
+  };
+
+  const handleLogoutCancel = () => {
+    setShowLogoutModal(false);
+  };
 
   // Scroll to bottom when messages update
   useEffect(() => {
@@ -48,20 +68,65 @@ const LandingPage = ({ onOpenWelcome }) => {
     }
 
     try {
-      const response = await chatAPI.sendMessage(userMessage, conversationId);
+      let response;
       
-      // Save conversation ID for future messages
-      if (response.conversation_id) {
-        setConversationId(response.conversation_id);
-      }
+      if (isAuthenticated && token) {
+        // Authenticated flow: use initiate/advance endpoints
+        let currentConversationId = conversationId;
+        let currentMessageStepNum = messageStepNum;
+        
+        // If no conversation exists, initiate one first
+        if (!currentConversationId) {
+          const initResponse = await chatAPI.initiate(token);
+          currentConversationId = initResponse.conversation_id;
+          currentMessageStepNum = initResponse.message_num;
+          setConversationId(currentConversationId);
+          setMessageStepNum(currentMessageStepNum);
+          
+          // Add the initial greeting from initiate
+          setMessages(prev => [...prev, {
+            id: `agent-init-${Date.now()}`,
+            content: initResponse.content,
+            sender: 'agent',
+            timestamp: new Date()
+          }]);
+        }
+        
+        // Now advance the conversation with the user's message
+        response = await chatAPI.advance(
+          token,
+          currentConversationId,
+          userMessage,
+          currentMessageStepNum
+        );
+        
+        // Update message step number for next message
+        setMessageStepNum(response.message_num);
+        
+        // Add agent response
+        setMessages(prev => [...prev, {
+          id: `agent-${Date.now()}`,
+          content: response.content,
+          sender: 'agent',
+          timestamp: new Date()
+        }]);
+      } else {
+        // Guest flow: use simple endpoint
+        response = await chatAPI.sendMessage(userMessage, conversationId);
+        
+        // Save conversation ID for future messages
+        if (response.conversation_id) {
+          setConversationId(response.conversation_id);
+        }
 
-      // Add agent response
-      setMessages(prev => [...prev, {
-        id: `agent-${Date.now()}`,
-        content: response.message,
-        sender: 'agent',
-        timestamp: new Date()
-      }]);
+        // Add agent response
+        setMessages(prev => [...prev, {
+          id: `agent-${Date.now()}`,
+          content: response.message,
+          sender: 'agent',
+          timestamp: new Date()
+        }]);
+      }
     } catch (error) {
       console.error('Failed to send message:', error);
       // Add error message
@@ -162,6 +227,12 @@ const LandingPage = ({ onOpenWelcome }) => {
 
   return (
     <div className="landing-page">
+      <LogoutModal
+        isOpen={showLogoutModal}
+        onClose={handleLogoutCancel}
+        onConfirm={handleLogoutConfirm}
+        email={user?.email}
+      />
       <div className="landing-header">
         <img 
           src={cfciLogo} 
@@ -169,6 +240,25 @@ const LandingPage = ({ onOpenWelcome }) => {
           className="header-logo" 
           onClick={handleLogoClick}
         />
+        <div className="header-auth">
+          {isAuthenticated ? (
+            <>
+              <span className="user-greeting">Hi, {user?.firstname || user?.email}</span>
+              <button className="header-auth-button" onClick={handleLogoutClick}>
+                Sign out
+              </button>
+            </>
+          ) : (
+            <>
+              <Link to="/login" className="header-auth-button">
+                Sign in
+              </Link>
+              <Link to="/register" className="header-auth-button primary">
+                Sign up
+              </Link>
+            </>
+          )}
+        </div>
       </div>
       
       <div className="landing-content">
@@ -192,9 +282,7 @@ const LandingPage = ({ onOpenWelcome }) => {
               >
                 {message.sender === 'agent' && (
                   <div className="message-avatar">
-                    <div className="avatar-gradient">
-                      <span className="avatar-letter">C</span>
-                    </div>
+                    <img src={cfciIcon} alt="CFCI" className="avatar-icon" />
                   </div>
                 )}
                 <div className="message-bubble">
@@ -205,9 +293,7 @@ const LandingPage = ({ onOpenWelcome }) => {
             {isLoading && (
               <div className="message agent-message">
                 <div className="message-avatar">
-                  <div className="avatar-gradient">
-                    <span className="avatar-letter">C</span>
-                  </div>
+                  <img src={cfciIcon} alt="CFCI" className="avatar-icon" />
                 </div>
                 <div className="message-bubble">
                   <div className="typing-indicator">
@@ -292,8 +378,8 @@ const LandingPage = ({ onOpenWelcome }) => {
               aria-label="Send message"
               disabled={isLoading || !inputValue.trim()}
             >
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M3.33337 10L16.6667 10M16.6667 10L10 3.33333M16.6667 10L10 16.6667" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
             </button>
           </div>
@@ -362,7 +448,7 @@ const LandingPage = ({ onOpenWelcome }) => {
               className="about-link"
               onClick={onOpenWelcome}
             >
-              Learn more about Product Lab Assistant
+              Learn more about CFCI Project Intake Chatbot
             </button>
           </>
         )}
