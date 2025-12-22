@@ -79,25 +79,17 @@ const LandingPage = ({ onOpenWelcome }) => {
         if (!currentConversationId) {
           const initResponse = await chatAPI.initiate(token);
           currentConversationId = initResponse.conversation_id;
-          currentMessageStepNum = initResponse.message_num;
+          currentMessageStepNum = 0;
           setConversationId(currentConversationId);
           setMessageStepNum(currentMessageStepNum);
-          
-          // Add the initial greeting from initiate
-          setMessages(prev => [...prev, {
-            id: `agent-init-${Date.now()}`,
-            content: initResponse.content,
-            sender: 'agent',
-            timestamp: new Date()
-          }]);
         }
-        
+
         // Now advance the conversation with the user's message
         response = await chatAPI.advance(
           token,
           currentConversationId,
           userMessage,
-          currentMessageStepNum
+          currentMessageStepNum + 1
         );
         
         // Update message step number for next message
